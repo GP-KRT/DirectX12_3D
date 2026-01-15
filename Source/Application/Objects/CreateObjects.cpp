@@ -15,7 +15,7 @@
 #include"Application/Components/Socket/SocketComponent.hpp"
 #include"Application/Components/HpRender/HpRenderComponent.hpp"
 #include"Application/Components/Status/StatusComponent.hpp"
-
+#include"Application/Components/Player/PlayerState/PlayerStateComponent.hpp"
 
 #include"Application/Components/Player/Input/InputRequestComponent.hpp"
 
@@ -68,6 +68,7 @@ entt::entity Engine::System::ObjectsFactory::CreatePlayer()
 	hpBar.SetPosition({100,10});
 
 	registry.emplace<System::InputRequestComponent>(player);
+	registry.emplace<System::PlayerStateComponent>(player);
 	return player;
 }
 
