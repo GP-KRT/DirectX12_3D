@@ -35,6 +35,7 @@
 #include<tuple>
 #include<span>
 #include<ranges>
+#include<initializer_list>
 
 //	Thread
 #include<thread>

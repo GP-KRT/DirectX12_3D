@@ -34,6 +34,19 @@ int Engine::Graphics::FbxMesh::FindBoneIndex(const std::string& BoneName) const
 	return -1;
 }
 
+/// <summary>
+/// 補間にかける時間の設定
+/// </summary>
+/// <param name="BlendTime"></param>
+void Engine::Graphics::FbxMesh::SetBlendTime(float BlendTime)
+{
+	if (BlendTime < 0.0f)
+	{
+		BlendTime = 0.0f;
+	}
+	mBlendTime = BlendTime;
+}
+
 Engine::Graphics::FbxMesh::FbxMesh()
 	:mResource(nullptr)
 	, mTransformBuffer(nullptr)
@@ -123,27 +136,44 @@ void Engine::Graphics::FbxMesh::Animate(const std::string& AnimationName, const 
 		return;
 	}
 
-	//	アニメーションの存在チェック
+	// アニメーションの存在チェック
 	const auto& AnimationList = mResource->GetAnimations();
 	if (AnimationList.count(AnimationName) == 0)
 	{
-		//	読み込まれていないアニメーション
 		return;
 	}
 
-	// true:今のアニメーションと引数のアニメーションは別物
+	// --- 1. アニメーションの切り替え判定 ---
 	if (mCurrentAnimationName != AnimationName)
 	{
-		//	アニメーション変更
-		mFrame = 0;
+		// 現在のアニメーションを「前の状態」として保存
+		mPreviousAnimationName = mCurrentAnimationName;
+		mPreviousFrame = mFrame;
+
+		// 補間パラメータの設定
+		mBlendTimer = 0.0f;
+		// 初回再生時(空文字)は補間しない。以前のアニメーションが存在する場合のみ blending を有効にする
+		mIsBlending = (!mPreviousAnimationName.empty());
+
+		// 新しいアニメーションをセット
 		mCurrentAnimationName = AnimationName;
+		mFrame = 0.0f;
+	}
+
+	// 補間タイマーと現在のフレームの更新
+	if (mIsBlending)
+	{
+		mBlendTimer += DeltaTime;
+		if (mBlendTimer >= mBlendTime)
+		{
+			mIsBlending = false;
+			mBlendTimer = mBlendTime; // Clamp
+		}
 	}
 
 	const auto& anim = AnimationList.at(mCurrentAnimationName);
-	//	アニメーションが60fps想定の数値なので余裕ができたらリソース取得の時にアニメーションの想定fpsを取得して1フレームでの時間を自由に設定できるようにしたい
 	const float duration = static_cast<float>(anim.NumFrame) * 0.016666666f;
 
-	//	フレーム更新
 	mFrame += DeltaTime;
 	if (mFrame >= duration)
 	{
@@ -163,7 +193,10 @@ void Engine::Graphics::FbxMesh::Animate(const std::string& AnimationName, const 
 		mIsAnimationFinish = false;
 	}
 
-	//	行列計算
+	// 前のアニメーションのフレームも止まっていると不自然な場合があるので、
+	// 必要なら mPreviousFrame も DeltaTime 分進める処理をここに入れてもOK
+
+	// 行列計算とブレンディング
 	const float currentFramePos = mFrame * 60.0f;
 	int f0 = Math::Clamp((int)currentFramePos, 0, anim.NumFrame - 1);
 	int f1 = Math::Clamp(f0 + 1, 0, anim.NumFrame - 1);
@@ -172,19 +205,42 @@ void Engine::Graphics::FbxMesh::Animate(const std::string& AnimationName, const 
 	const auto& bones = mResource->GetBones();
 	const int numBones = (int)bones.size();
 
-	for (int i = 0; i < numBones; ++i) {
-		// キーフレーム補間
-		Math::Matrix local = Math::Matrix::Lerp(anim.KeyFrame[i][f0], anim.KeyFrame[i][f1], t);
+	// 補間の強さを算出 (0.0:前のアニメが100% ～ 1.0:今のアニメが100%)
+	float blendAlpha = mIsBlending ? (mBlendTimer / mBlendTime) : 1.0f;
+
+	for (int i = 0; i < numBones; ++i)
+	{
+		// 今のアニメーションの姿勢
+		Math::Matrix localNow = Math::Matrix::Lerp(anim.KeyFrame[i][f0], anim.KeyFrame[i][f1], t);
+		Math::Matrix finalLocal = localNow;
+
+		// 補間中なら前のアニメーションの姿勢を計算して混ぜる
+		if (mIsBlending && AnimationList.count(mPreviousAnimationName))
+		{
+			const auto& prevAnim = AnimationList.at(mPreviousAnimationName);
+
+			float pFramePos = mPreviousFrame * 60.0f;
+			int pf0 = Math::Clamp((int)pFramePos, 0, prevAnim.NumFrame - 1);
+			int pf1 = Math::Clamp(pf0 + 1, 0, prevAnim.NumFrame - 1);
+			float pt = pFramePos - (float)pf0;
+
+			Math::Matrix localPrev = Math::Matrix::Lerp(prevAnim.KeyFrame[i][pf0], prevAnim.KeyFrame[i][pf1], pt);
+
+			// 前の姿勢と今の姿勢を線形補間
+			finalLocal = Math::Matrix::Lerp(localPrev, localNow, blendAlpha);
+		}
 
 		// 親子階層結合
-		if (bones[i].ParentIndex >= 0) {
-			mCurrentGlobalMatrices[i] = local * mCurrentGlobalMatrices[bones[i].ParentIndex];
+		if (bones[i].ParentIndex >= 0)
+		{
+			mCurrentGlobalMatrices[i] = finalLocal * mCurrentGlobalMatrices[bones[i].ParentIndex];
 		}
-		else {
-			mCurrentGlobalMatrices[i] = local;
+		else
+		{
+			mCurrentGlobalMatrices[i] = finalLocal;
 		}
 
-		// GPU送信用：最終行列 = BindMatrix * GlobalMatrix (転置して格納)
+		// GPU送信用
 		mSkinningMatrices[i] = Math::Matrix::Transpose(bones[i].BindMatrix * mCurrentGlobalMatrices[i]);
 	}
 }
@@ -204,12 +260,12 @@ void Engine::Graphics::FbxMesh::Render()
 	renderer->SetFbxPipeline();
 
 
-	// 1. モデルの姿勢行列を作成
+	// モデルの姿勢行列を作成
 	Math::Matrix world;
 	// mPosition, mRotation, mScale を使って行列を合成
 	world.Update(mPosition, mRotation, mScale);
 
-	// 2. 定数バッファへ転置してセット
+	// 定数バッファへ転置してセット
 	mCBInfo.World = Math::Matrix::Transpose(world);
 	mCBInfo.View = Math::Matrix::Transpose(System::Camera::Main->GetView());
 	mCBInfo.Projection = Math::Matrix::Transpose(System::Camera::Main->GetProjection());

@@ -81,7 +81,7 @@ void Engine::System::SocketComponentSystem::Render(entt::registry& Reg)
             trans.Rotation = finalRot;
 
             // デバッグ表示
-            Graphics::Renderer::GetInstance()->DrawGizmo(worldSocketPos, boneRot, 1.0f); // 100.3は大きいので1.0に
+            Graphics::Renderer::GetInstance()->DrawGizmo(worldSocketPos, boneRot, 1.0f);
             Graphics::Renderer::GetInstance()->DrawGizmo(trans.Position, trans.Rotation, 0.2f);
 
         });

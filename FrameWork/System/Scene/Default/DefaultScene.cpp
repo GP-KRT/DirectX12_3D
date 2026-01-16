@@ -70,7 +70,7 @@ bool Engine::System::DefaultScene::Initialize()
 
     //  ìGÇÃçÏê¨
     System::ObjectsFactory::CreateEnemy();
-    System::ObjectsFactory::CreateSword(player);
+    //System::ObjectsFactory::CreateSword(player);
 
     ret = sUI.Create(luffy);
     sUI.SetPosition({ 100,100 });

@@ -88,6 +88,21 @@ namespace Engine::Graphics
 			return mCurrentGlobalMatrices[index];
 		}
 
+		/// <summary>
+		/// アニメーションが終了しているかどうか
+		/// </summary>
+		/// <returns>true:終了</returns>
+		bool GetAnimationFinish()const
+		{
+			return mIsAnimationFinish;
+		}
+
+		/// <summary>
+		/// 補間にかける時間の設定
+		/// </summary>
+		/// <param name="BlendTime"></param>
+		void SetBlendTime(float BlendTime);
+
 	protected:
 		/// <summary>
 		/// モデル用定数バッファ構造体
@@ -140,14 +155,14 @@ namespace Engine::Graphics
 		std::array<Math::Matrix, BONE_COUNT_MAX> mCurrentGlobalMatrices;
 
 		/// <summary>
-		/// 今のフレーム
-		/// </summary>
-		float mFrame;
-
-		/// <summary>
 		/// 今のアニメーション名
 		/// </summary>
 		std::string mCurrentAnimationName;
+
+		/// <summary>
+		/// 前のアニメーション名
+		/// </summary>
+		std::string mPreviousAnimationName;
 
 		/// <summary>
 		/// 座標
@@ -169,7 +184,35 @@ namespace Engine::Graphics
 		/// </summary>
 		Color mMeshColor;
 
+		/// <summary>
+		///	メッシュの定数バッファ用の情報
+		/// </summary>
 		MeshConstantBufferInfo mCBInfo;
+
+		/// <summary>
+		/// 今のフレーム
+		/// </summary>
+		float mFrame;
+
+		/// <summary>
+		/// 前のフレーム進捗
+		/// </summary>
+		float mPreviousFrame = 0.0f;
+
+		/// <summary>
+		///	補間にかける全時間
+		/// </summary>
+		float mBlendTime = 0.2f;
+
+		/// <summary>
+		/// 補間開始からの経過時間
+		/// </summary>
+		float mBlendTimer = 0.0f;
+
+		/// <summary>
+		/// 今補間中かどうか
+		/// </summary>
+		bool  mIsBlending = false;
 
 		/// <summary>
 		/// アニメーションの終了判定
