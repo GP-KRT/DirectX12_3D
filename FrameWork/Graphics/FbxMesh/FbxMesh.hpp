@@ -78,6 +78,13 @@ namespace Engine::Graphics
 		Math::Quaternion GetBoneWorldRotation(const std::string& BoneName)const;
 
 		/// <summary>
+		/// 回転と座標を合わせた最終的なワールド行列を直接返す
+		/// </summary>
+		/// <param name="BoneName"></param>
+		/// <returns></returns>
+		Math::Matrix GetBoneFinalMatrix(const std::string& BoneName) const;
+
+		/// <summary>
 		/// ボーン名から配列のインデックスを検索するヘルパー
 		/// </summary>
 		/// <param name="BoneName">ボーン名</param>

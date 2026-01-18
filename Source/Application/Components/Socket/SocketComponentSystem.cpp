@@ -41,7 +41,7 @@ void Engine::System::SocketComponentSystem::Render(entt::registry& Reg)
             }
 
 
-            // 1. クォータニオンの正規化（巨大化防止）
+            // クォータニオンの正規化（巨大化防止）
                     // 計算に使う前に、必ず長さを1に揃えます
             auto NormalizeQuat = [](Math::Quaternion& q) {
                 float lenSq = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
@@ -52,16 +52,16 @@ void Engine::System::SocketComponentSystem::Render(entt::registry& Reg)
                 };
             NormalizeQuat(socket.OffsetRot);
 
-            // 2. ボーンの姿勢取得
+            // ボーンの姿勢取得
             Math::Vector3 bonePos = parentFbx->Mesh->GetBoneWorldPosition(socket.BoneName);
             Math::Quaternion boneRot = parentFbx->Mesh->GetBoneWorldRotation(socket.BoneName);
             NormalizeQuat(boneRot); // 親ボーンのデータも念のため正規化
 
-            // 3. 最終的な回転
-            Math::Quaternion finalRot = boneRot * socket.OffsetRot;
+            // 最終的な回転
+            Math::Quaternion finalRot =socket.OffsetRot * boneRot;
             NormalizeQuat(finalRot);
 
-            // 4. ベクトル回転関数の安全化
+            // ベクトル回転関数の安全化
             auto RotateVec = [](const Math::Vector3& v, const Math::Quaternion& q) {
                 Math::Vector3 qV(q.x, q.y, q.z);
                 // 外積を使った回転

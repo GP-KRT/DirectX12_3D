@@ -184,6 +184,7 @@ entt::entity Engine::System::ObjectsFactory::CreateSword(entt::entity Parent)
 
 	//	fbxのリソース
 	auto res = Graphics::FbxResourceManager::GetInstance()->Load("Assets/Sword/Sword.fbx.bin");
+	//auto res = Graphics::FbxResourceManager::GetInstance()->Load("Assets/Sword/MM_Sword.fbx.bin");
 
 
 	//	fbxのモデル
@@ -197,9 +198,11 @@ entt::entity Engine::System::ObjectsFactory::CreateSword(entt::entity Parent)
 	auto& socket = registry.emplace<SocketComponent>(sword);
 	socket.Parent = Parent;
 	socket.BoneName = "hand_r";
-	socket.OffsetPos = { 0.1,-0.64,-0.17 };
-	socket.OffsetRot = { 0.0,0.848,0.0,0.531 };
-	socket.PivotOffset = { -0.39,2.27,-0.22 };
+	socket.OffsetPos = { 0.46,-0.33,0.11 };
+	socket.OffsetRot = { -0.8,0.176,0.32,0.46 };
+	//socket.PivotOffset = { -0.39,2.27,-0.22 };
+
+	registry.emplace<WeaponTag>(sword);
 
 	return sword;
 }

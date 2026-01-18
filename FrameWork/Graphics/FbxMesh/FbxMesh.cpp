@@ -368,35 +368,42 @@ Math::Vector3 Engine::Graphics::FbxMesh::GetBoneWorldPosition(const std::string&
 
 Math::Quaternion Engine::Graphics::FbxMesh::GetBoneWorldRotation(const std::string& BoneName) const
 {
-	//	index
 	int index = this->FindBoneIndex(BoneName);
-	if (index == -1 || index >= BONE_COUNT_MAX)
-	{
-		return mRotation;
-	}
+	if (index == -1 || index >= BONE_COUNT_MAX) return mRotation;
 
-	//	モデル自体のワールド行列を計算
+	// スケールを 1.0 に固定した「向き専用」の行列を作る
+	Math::Matrix worldNoScale;
+	worldNoScale.Update(mPosition, mRotation, Math::Vector3(1.0f, 1.0f, 1.0f));
+
+	// ボーンの累積行列（これもスケールを含まないのが理想）
+	Math::Matrix m = mCurrentGlobalMatrices[index] * worldNoScale;
+
+	// 行列から回転を抽出
+	Math::Quaternion q = Math::Quaternion::FromMatrix(m);
+
+	// 念のため正規化して返す
+	float lenSq = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+	if (lenSq > 0) {
+		float len = sqrtf(lenSq);
+		q.x /= len; q.y /= len; q.z /= len; q.w /= len;
+	}
+	return q;
+}
+
+Math::Matrix Engine::Graphics::FbxMesh::GetBoneFinalMatrix(const std::string& BoneName) const
+{
+	int index = this->FindBoneIndex(BoneName);
+
+	// モデル自体のワールド行列を構築
 	Math::Matrix world;
 	world.Update(mPosition, mRotation, mScale);
 
-	//	モデル空間のボーン行列にモデルのワールド行列を掛ける
-	Math::Matrix m = mCurrentGlobalMatrices[index] * world;
-	// ベクトルの作成
-	Math::Vector3 x(m._11, m._12, m._13);
-	Math::Vector3 y(m._21, m._22, m._23);
-	Math::Vector3 z(m._31, m._32, m._33);
+	if (index == -1 || index >= BONE_COUNT_MAX)
+	{
+		return world; // ボーンが見つからなければ本体の行列を返す
+	}
 
-	// 正規化
-	x.Normalize();
-	y.Normalize();
-	z.Normalize();
-
-	// 正規化された軸を使って回転行列を組み立てる
-	Math::Matrix rot = Math::Matrix::identity;
-	rot._11 = x.x; rot._12 = x.y; rot._13 = x.z;
-	rot._21 = y.x; rot._22 = y.y; rot._23 = y.z;
-	rot._31 = z.x; rot._32 = z.y; rot._33 = z.z;
-
-	// クォータニオンに変換
-	return Math::Quaternion::FromMatrix(rot);
+	// ボーンのモデル空間行列(アニメーション適用済) * モデルのワールド行列
+	// これで「今、画面上のどこに手があるか」の行列が完成する
+	return mCurrentGlobalMatrices[index] * world;
 }
