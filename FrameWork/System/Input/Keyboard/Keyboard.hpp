@@ -43,21 +43,21 @@ namespace Engine::Input
 		/// </summary>
 		/// <param name="keyCode">キーコード</param>
 		/// <returns></returns>
-		bool IsKeyPressed(eKeyCode keyCode)const;
+		bool IsPressed(eKeyCode keyCode)const;
 
 		/// <summary>
 		/// 押している間
 		/// </summary>
 		/// <param name="keyCode">キーコード</param>
 		/// <returns></returns>
-		bool IsKeyHeld(eKeyCode keyCode)const;
+		bool IsHeld(eKeyCode keyCode)const;
 
 		/// <summary>
 		/// 離した瞬間
 		/// </summary>
 		/// <param name="keyCode">キーコード</param>
 		/// <returns></returns>
-		bool IsKeyReleased(eKeyCode keyCode)const;
+		bool IsReleased(eKeyCode keyCode)const;
 
 		/// <summary>
 		/// 状態の更新

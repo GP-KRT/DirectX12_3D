@@ -120,7 +120,7 @@ void Engine::Input::Mouse::Update()
 }
 
 
-bool Engine::Input::Mouse::IsButtonPressed(eMouseButton Button)
+bool Engine::Input::Mouse::IsPressed(eMouseButton Button)
 {
 	if (IsValid(Button) == false) return false;
 
@@ -128,14 +128,14 @@ bool Engine::Input::Mouse::IsButtonPressed(eMouseButton Button)
 		&& mPrevButtons[static_cast<int>(Button)] == false;
 }
 
-bool Engine::Input::Mouse::IsButtonHeld(eMouseButton Button)
+bool Engine::Input::Mouse::IsHeld(eMouseButton Button)
 {
 	if (IsValid(Button) == false) return false;
 
 	return mCurrButtons[static_cast<int>(Button)] == true;
 }
 
-bool Engine::Input::Mouse::IsButtonReleased(eMouseButton Button)
+bool Engine::Input::Mouse::IsReleased(eMouseButton Button)
 {
 	if (IsValid(Button) == false) return false;
 

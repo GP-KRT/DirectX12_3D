@@ -197,7 +197,7 @@ bool Engine::Input::Keyboard::ProcessEvent(UINT Message, WPARAM VKCode)
 /// </summary>
 /// <param name="keyCode">キーコード</param>
 /// <returns></returns>
-bool Engine::Input::Keyboard::IsKeyPressed(eKeyCode keyCode) const
+bool Engine::Input::Keyboard::IsPressed(eKeyCode keyCode) const
 {
 	if (IsValid(keyCode) == false) return false;
 	return (mCurrKeys[static_cast<uint32_t>(keyCode)] == true
@@ -209,7 +209,7 @@ bool Engine::Input::Keyboard::IsKeyPressed(eKeyCode keyCode) const
 /// </summary>
 /// <param name="keyCode">キーコード</param>
 /// <returns></returns>
-bool Engine::Input::Keyboard::IsKeyHeld(eKeyCode keyCode) const
+bool Engine::Input::Keyboard::IsHeld(eKeyCode keyCode) const
 {
 	if (IsValid(keyCode) == false) return false;
 	return mCurrKeys[static_cast<uint32_t>(keyCode)] == true;
@@ -220,7 +220,7 @@ bool Engine::Input::Keyboard::IsKeyHeld(eKeyCode keyCode) const
 /// </summary>
 /// <param name="keyCode">キーコード</param>
 /// <returns></returns>
-bool Engine::Input::Keyboard::IsKeyReleased(eKeyCode keyCode) const
+bool Engine::Input::Keyboard::IsReleased(eKeyCode keyCode) const
 {
 	if (IsValid(keyCode) == false) return false;
 	return mCurrKeys[static_cast<uint32_t>(keyCode)] == false

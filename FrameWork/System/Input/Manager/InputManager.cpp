@@ -16,7 +16,10 @@ bool Engine::Input::InputManager::Initialize()
 	* 余裕ができたらファイルから前回の設定を引き継げるようにします
 	*/
 
-
+	AddAction("Select", { eKeyCode::Enter,ePadButton::A });
+	AddAction("Cancel", { eKeyCode::Escape,ePadButton::B });
+	AddAction("Attack", { eKeyCode::Count,ePadButton::R2,eMouseButton::Left });
+	AddAction("Jump", { eKeyCode::Space,ePadButton::A });
 
 	return true;
 }
@@ -93,20 +96,20 @@ Math::Vector2 Engine::Input::InputManager::GetAxis()
 	Math::Vector2 pad = {};
 
 	//	キーボード
-	if (mKeyboard->IsKeyHeld(Input::eKeyCode::D))
+	if (mKeyboard->IsHeld(Input::eKeyCode::D))
 	{
 		key.x += 1.0f;
 	}
-	if (mKeyboard->IsKeyHeld(Input::eKeyCode::A))
+	if (mKeyboard->IsHeld(Input::eKeyCode::A))
 	{
 		key.x -= 1.0f;
 	}
 	//	キーボード
-	if (mKeyboard->IsKeyHeld(Input::eKeyCode::W))
+	if (mKeyboard->IsHeld(Input::eKeyCode::W))
 	{
 		key.y += 1.0f;
 	}
-	if (mKeyboard->IsKeyHeld(Input::eKeyCode::S))
+	if (mKeyboard->IsHeld(Input::eKeyCode::S))
 	{
 		key.y -= 1.0f;
 	}
@@ -173,11 +176,12 @@ bool Engine::Input::InputManager::IsActionPressed(const std::string& ActionName)
 
 	const auto& bind = it->second;
 
-	//	どちらかが入力されていたらtrue
-	const bool KeyIn = mKeyboard->IsKeyPressed(bind.key);
+	//	どれかが入力されていたらtrue
+	const bool KeyIn = mKeyboard->IsPressed(bind.key);
 	const bool PadIn = mPadManager->IsPressed(bind.pad);
+	const bool MouseIn = mMouse->IsPressed(bind.mouse);
 
-	return KeyIn || PadIn;
+	return KeyIn || PadIn || MouseIn;
 }
 
 /// <summary>
@@ -192,12 +196,12 @@ bool Engine::Input::InputManager::IsActionHeld(const std::string& ActionName)
 
 	const auto& bind = it->second;
 
-	//	どちらかが入力されていたらtrue
-	const bool KeyIn = mKeyboard->IsKeyHeld(bind.key);
+	//	どれかが入力されていたらtrue
+	const bool KeyIn = mKeyboard->IsHeld(bind.key);
 	const bool PadIn = mPadManager->IsHeld(bind.pad);
+	const bool MouseIn = mMouse->IsHeld(bind.mouse);
 
-
-	return KeyIn || PadIn;
+	return KeyIn || PadIn || MouseIn;
 }
 
 /// <summary>
@@ -212,9 +216,10 @@ bool Engine::Input::InputManager::IsActionReleased(const std::string& ActionName
 
 	const auto& bind = it->second;
 
-	//	どちらかが入力されていたらtrue
-	const bool KeyIn = mKeyboard->IsKeyReleased(bind.key);
+	//	どれかが入力されていたらtrue
+	const bool KeyIn = mKeyboard->IsReleased(bind.key);
 	const bool PadIn = mPadManager->IsReleased(bind.pad);
+	const bool MouseIn = mMouse->IsReleased(bind.mouse);
 
-	return KeyIn || PadIn;
+	return KeyIn || PadIn || MouseIn;
 }

@@ -47,9 +47,9 @@ namespace Engine::Input
 		bool ProcessEvent(UINT Message, WPARAM WParam, LPARAM LParam);
 		void Update();
 
-		bool IsButtonPressed(eMouseButton Button);
-		bool IsButtonHeld(eMouseButton Button);
-		bool IsButtonReleased(eMouseButton Button);
+		bool IsPressed(eMouseButton Button);
+		bool IsHeld(eMouseButton Button);
+		bool IsReleased(eMouseButton Button);
 
 		Math::Vector2 GetPosition()const;
 		Math::Vector2 GetDeltaPosition() const;
