@@ -116,13 +116,16 @@ void Engine::System::ObjectsFactory::CreateEnemy()
 	transform.Rotation = Math::Quaternion::Identity;
 
 	//	fbxのリソース
+	bool b = false;
 	auto res = Graphics::FbxResourceManager::GetInstance()->Load("Assets/Mannequin/SKM_Manny_Simple.FBX.bin");
-	res->LoadAnimation("Idle", "Assets/Mannequin/Animation/MM_Idle.FBX.anm");
-	res->LoadAnimation("Run", "Assets/Mannequin/Animation/MM_Run_Fwd.FBX.anm");
+	b = res->LoadAnimation("Idle", "Assets/Mannequin/Animation/MM_Idle.FBX.anm");
+	b = res->LoadAnimation("Jump", "Assets/Mannequin/Animation/MM_Jump.FBX.anm");
+	b = res->LoadAnimation("Attack", "Assets/Mannequin/Animation/SwordSlash.fbx.anm");
 
+	
 	//	fbxのモデル
 	auto& fbx = registry.emplace<FbxComponent>(enemy, res);
-	fbx.CurrAnimation = "Idle";
+	fbx.CurrAnimation = "Attack";
 	fbx.Mesh->SetColor(Graphics::Color::Red());
 
 	//	当たり判定
